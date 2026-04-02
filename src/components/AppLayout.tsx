@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import {
   LayoutDashboard, User, FolderOpen, FileText, Bell,
-  PlusCircle, Settings, Users, ClipboardList, LogOut, GraduationCap
+  PlusCircle, Settings, Users, ClipboardList, LogOut,
 } from "lucide-react";
+import CollabSphereLogo from "@/components/CollabSphereLogo";
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
@@ -48,7 +49,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-6 py-5 border-b border-border">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <GraduationCap className="w-5 h-5 text-primary-foreground" />
+            <CollabSphereLogo size={18} className="text-primary-foreground" />
           </div>
           <span className="font-display text-lg font-bold text-foreground tracking-tight">CollabSphere</span>
         </div>
@@ -101,7 +102,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-border bg-card">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-primary-foreground" />
+              <CollabSphereLogo size={16} className="text-primary-foreground" />
             </div>
             <span className="font-display text-base font-bold">CollabSphere</span>
           </div>

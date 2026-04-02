@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
-import { GraduationCap, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import CollabSphereLogo from "@/components/CollabSphereLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,7 +37,7 @@ const LoginPage: React.FC = () => {
         </div>
         <div className="relative z-10 px-16 text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-8">
-            <GraduationCap className="w-9 h-9 text-primary-foreground" />
+            <CollabSphereLogo size={36} className="text-primary-foreground" />
           </div>
           <h1 className="font-display text-4xl font-bold text-background mb-4">CollabSphere</h1>
           <p className="text-background/60 text-lg max-w-md">
@@ -49,7 +50,7 @@ const LoginPage: React.FC = () => {
         <div className="w-full max-w-md">
           <div className="lg:hidden flex items-center gap-2 mb-8">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-primary-foreground" />
+              <CollabSphereLogo size={18} className="text-primary-foreground" />
             </div>
             <span className="font-display text-xl font-bold">CollabSphere</span>
           </div>
