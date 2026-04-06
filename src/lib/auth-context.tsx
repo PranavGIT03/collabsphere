@@ -60,20 +60,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session immediately
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const timeout = <T,>(ms: number, fallback: T): Promise<T> =>
+      new Promise((resolve) => setTimeout(() => resolve(fallback), ms));
+
+    // Resolve session within 3s or assume logged out
+    Promise.race([
+      supabase.auth.getSession(),
+      timeout(3000, { data: { session: null }, error: null }),
+    ]).then(async ({ data: { session } }) => {
       if (session) {
         const authUser = await sessionToAuthUser(session);
         setUser(authUser);
       }
       setLoading(false);
-    }).catch(() => {
-      setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     // Listen for subsequent auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "INITIAL_SESSION") return; // already handled above
+      if (event === "INITIAL_SESSION") return; // handled above
       if (session) {
         const authUser = await sessionToAuthUser(session);
         setUser(authUser);
