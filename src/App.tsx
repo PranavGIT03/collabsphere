@@ -20,6 +20,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import FacultyProfile from "@/pages/faculty/FacultyProfile";
 import BulletinBoard from "@/pages/BulletinBoard";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const AppRoutes = () => {
 
       {/* Shared */}
       <Route path="/bulletin" element={<ProtectedRoute><BulletinBoard /></ProtectedRoute>} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>

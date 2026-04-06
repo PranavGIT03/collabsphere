@@ -14,6 +14,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -22,6 +23,22 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     supabase.from("profiles").select("user_id").limit(1).then(() => {});
   }, []);
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({ title: "Enter your email first", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setResetSent(true);
+      toast({ title: "Reset email sent", description: "Check your inbox for a password reset link." });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +120,17 @@ const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
+          <p className="text-center text-sm mt-4">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-primary hover:underline"
+            >
+              {resetSent ? "Reset email sent — check your inbox" : "Forgot password?"}
+            </button>
+          </p>
+
+          <p className="text-center text-sm text-muted-foreground mt-3">
             Don't have an account?{" "}
             <Link to="/register" className="text-primary font-medium hover:underline">
               Create one
