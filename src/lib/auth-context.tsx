@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 
 export type UserRole = "student" | "faculty" | "admin";
 
@@ -32,15 +32,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 async function fetchUserRole(userId: string): Promise<UserRole> {
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", userId)
-    .single();
-  return (data?.role as UserRole) ?? "student";
+  try {
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .single();
+    return (data?.role as UserRole) ?? "student";
+  } catch {
+    return "student";
+  }
 }
 
-async function buildAuthUser(session: Session): Promise<AuthUser> {
+async function sessionToAuthUser(session: Session): Promise<AuthUser> {
   const role = await fetchUserRole(session.user.id);
   const meta = session.user.user_metadata;
   return {
@@ -56,38 +60,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let initialised = false;
+    // Check for existing session immediately
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        const authUser = await sessionToAuthUser(session);
+        setUser(authUser);
+      }
+      setLoading(false);
+    }).catch(() => {
+      setLoading(false);
+    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      try {
-        if (session) {
-          const authUser = await buildAuthUser(session);
-          setUser(authUser);
-        } else {
-          setUser(null);
-        }
-      } catch {
+    // Listen for subsequent auth changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "INITIAL_SESSION") return; // already handled above
+      if (session) {
+        const authUser = await sessionToAuthUser(session);
+        setUser(authUser);
+      } else {
         setUser(null);
-      } finally {
-        if (!initialised) {
-          initialised = true;
-          setLoading(false);
-        }
       }
     });
 
-    // Fallback: if onAuthStateChange never fires, unblock after 3s
-    const timeout = setTimeout(() => {
-      if (!initialised) {
-        initialised = true;
-        setLoading(false);
-      }
-    }, 3000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
