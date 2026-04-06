@@ -56,27 +56,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up listener FIRST
+    let initialised = false;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session) {
-        const authUser = await buildAuthUser(session);
-        setUser(authUser);
-      } else {
+      try {
+        if (session) {
+          const authUser = await buildAuthUser(session);
+          setUser(authUser);
+        } else {
+          setUser(null);
+        }
+      } catch {
         setUser(null);
+      } finally {
+        if (!initialised) {
+          initialised = true;
+          setLoading(false);
+        }
       }
-      setLoading(false);
     });
 
-    // Then check existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) {
-        const authUser = await buildAuthUser(session);
-        setUser(authUser);
+    // Fallback: if onAuthStateChange never fires, unblock after 3s
+    const timeout = setTimeout(() => {
+      if (!initialised) {
+        initialised = true;
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    }, 3000);
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
