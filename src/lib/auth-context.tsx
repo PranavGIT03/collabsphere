@@ -90,7 +90,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const authPromise = supabase.auth.signInWithPassword({ email, password });
+    const timeoutPromise = new Promise<{ error: { message: string } }>((resolve) =>
+      setTimeout(() => resolve({ error: { message: "Request timed out — please try again." } }), 10000)
+    );
+    const { error } = await Promise.race([authPromise, timeoutPromise]);
     if (error) return { error: error.message };
     return {};
   }, []);

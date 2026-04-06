@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff } from "lucide-react";
 import CollabSphereLogo from "@/components/CollabSphereLogo";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,11 @@ const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Warm up Supabase connection as soon as login page renders
+  useEffect(() => {
+    supabase.from("profiles").select("user_id").limit(1).then(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
